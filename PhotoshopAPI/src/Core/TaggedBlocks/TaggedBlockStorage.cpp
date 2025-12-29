@@ -213,8 +213,41 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 	}
 	else
 	{
-		PSAPI_LOG_ERROR("TaggedBlock", "Could not find tagged block from key '%s'", keyStr.c_str());
-		return nullptr;
+	// --- PASSTHROUGH FIX (Corrected) ---
+		
+		// 1. Read the length (Use ReadBinaryData to match the rest of the file)
+		uint32_t length = ReadBinaryData<uint32_t>(document);
+		
+		// 2. Read the raw data
+		std::vector<uint8_t> rawData(length);
+		if (length > 0)
+		{
+			// Ensure we use the safe pointer method for reading into vector
+			document.read(static_cast<void*>(rawData.data()), length);
+		}
+		
+		// 3. Handle Padding (Align to 4 bytes)
+		uint32_t paddedLength = ((length + 3) & ~3);
+		uint32_t paddingToSkip = paddedLength - length;
+		if (paddingToSkip > 0)
+		{
+			document.skip(paddingToSkip);
+		}
+		
+		// 4. Create the Passthrough Block (Declare 'passthroughBlock'!)
+		auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, rawData);
+		
+		// Set standard properties
+		passthroughBlock->m_Signature = signature;
+		passthroughBlock->m_Offset = offset; 
+
+		// Store it
+		this->m_TaggedBlocks.push_back(passthroughBlock);
+		return passthroughBlock;
+
+		// old logic
+		// PSAPI_LOG_ERROR("TaggedBlock", "Could not find tagged block from key '%s'", keyStr.c_str());
+		// return nullptr;
 	}
 }
 
