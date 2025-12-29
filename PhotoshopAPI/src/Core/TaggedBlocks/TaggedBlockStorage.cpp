@@ -211,9 +211,9 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 			return baseTaggedBlock;
 		}
 	}
-	else
+else
 	{
-	// --- PASSTHROUGH FIX (Corrected) ---
+		// --- PASSTHROUGH FIX (Corrected) ---
 		
 		// 1. Read the length (Use ReadBinaryData to match the rest of the file)
 		uint32_t length = ReadBinaryData<uint32_t>(document);
@@ -222,11 +222,12 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 		std::vector<uint8_t> rawData(length);
 		if (length > 0)
 		{
-			// Ensure we use the safe pointer method for reading into vector
-			document.read(static_cast<void*>(rawData.data()), length);
+			// FIX: Access the underlying array with .data()
+			document.read(rawData.data(), length);
 		}
 		
 		// 3. Handle Padding (Align to 4 bytes)
+		// PSDs align these blocks to 4 bytes. 
 		uint32_t paddedLength = ((length + 3) & ~3);
 		uint32_t paddingToSkip = paddedLength - length;
 		if (paddingToSkip > 0)
@@ -234,20 +235,17 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 			document.skip(paddingToSkip);
 		}
 		
-		// 4. Create the Passthrough Block (Declare 'passthroughBlock'!)
-		auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, rawData);
+		// 4. Create the Passthrough Block
+		// FIX: We declare 'passthroughBlock' explicitly here
+		auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
 		
-		// Set standard properties
+		// Set standard properties on the parent class
 		passthroughBlock->m_Signature = signature;
 		passthroughBlock->m_Offset = offset; 
 
-		// Store it
+		// Store it and return
 		this->m_TaggedBlocks.push_back(passthroughBlock);
 		return passthroughBlock;
-
-		// old logic
-		// PSAPI_LOG_ERROR("TaggedBlock", "Could not find tagged block from key '%s'", keyStr.c_str());
-		// return nullptr;
 	}
 }
 
