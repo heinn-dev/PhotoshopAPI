@@ -205,7 +205,7 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 		}
 else
 		{
-			// --- PASSTHROUGH FIX (For Known-but-Unhandled Keys) ---
+		// --- PASSTHROUGH FIX (Dynamic Padding) ---
 
 			// 1. Read the length
 			uint32_t length = ReadBinaryData<uint32_t>(document);
@@ -217,14 +217,18 @@ else
 				document.read(rawData);
 			}
 
-			// 3. Handle Padding (FORCE 4-byte alignment)
-			// Layer Info blocks are always padded to 4 bytes, regardless of the function argument.
-			// This matches the logic we used in the outer 'else'.
-			uint32_t paddedLength = ((length + 3) & ~3);
-			uint32_t paddingToSkip = paddedLength - length;
-			if (paddingToSkip > 0)
+			// 3. Handle Padding (Respect the function argument!)
+			// We MUST use the 'padding' variable passed to this function.
+			// - Adjustment Layers will pass 4.
+			// - Standard Layers/Images will pass 1.
+			// My previous code forced 4, which broke the reading of 'ImageData.psb'.
+			if (padding > 0)
 			{
-				document.skip(paddingToSkip);
+				uint32_t paddingBytes = (padding - (length % padding)) % padding;
+				if (paddingBytes > 0)
+				{
+					document.skip(paddingBytes);
+				}
 			}
 
 			// 4. Create the Passthrough Block

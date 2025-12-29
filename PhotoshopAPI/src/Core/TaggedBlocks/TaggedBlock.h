@@ -48,37 +48,36 @@ struct PassthroughTaggedBlock : public TaggedBlock
         m_Key = Enum::TaggedBlockKey::Unknown;
     }
 
-    void write(File& document, [[maybe_unused]] const FileHeader& header, [[maybe_unused]] ProgressCallback& callback, [[maybe_unused]] const uint16_t padding = 1u) override
+	void write(File& document, [[maybe_unused]] const FileHeader& header, [[maybe_unused]] ProgressCallback& callback, [[maybe_unused]] const uint16_t padding = 1u) override
     {
-        // 1. Write Signature (8BIM)
-        // Fix: Use WriteBinaryData<T> helper, not document.write
+        // 1. Signature
         WriteBinaryData<uint32_t>(document, m_Signature.m_Value);
 
-        // 2. Write the Original Key (e.g. "Curv") explicitly
+        // 2. Key
         if (m_OriginalKey.size() != 4) {
-             PSAPI_LOG_ERROR("PassthroughBlock", "Invalid key length for passthrough block");
+             PSAPI_LOG_ERROR("PassthroughBlock", "Invalid key length");
              return; 
         }
-        // Fix: Write characters individually as bytes
         for (char c : m_OriginalKey) {
             WriteBinaryData<uint8_t>(document, static_cast<uint8_t>(c));
         }
 
-        // 3. Write Length
+        // 3. Length
         uint64_t dataSize = m_Data.size();
-        // Fix: Use WriteBinaryData<T>
         WriteBinaryData<uint32_t>(document, static_cast<uint32_t>(dataSize)); 
 
-        // 4. Write Data
-        // File::write accepts vector directly because it converts to span
+        // 4. Data
         document.write(m_Data);
 
-        // 5. Write Padding (to 4-byte alignment)
-        uint32_t paddingBytes = (4 - (dataSize % 4)) % 4;
-        for (uint32_t i = 0; i < paddingBytes; ++i)
+        // 5. Padding (Dynamic Fix)
+        // Use the 'padding' argument just like the Reader does!
+        if (padding > 0)
         {
-            // Fix: Write padding byte using helper
-            WriteBinaryData<uint8_t>(document, 0u);
+            uint32_t paddingBytes = (padding - (dataSize % padding)) % padding;
+            for (uint32_t i = 0; i < paddingBytes; ++i)
+            {
+                WriteBinaryData<uint8_t>(document, 0u);
+            }
         }
     }
 };
