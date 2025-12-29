@@ -222,9 +222,9 @@ else
 		// 2. Read the raw data
 		// We initialize the vector to the correct size first
 		std::vector<uint8_t> rawData(length);
+
 		if (length > 0)
 		{
-			// Fix: Pass the vector directly. The API handles the pointer/size internally.
 			document.read(rawData);
 		}
 		
