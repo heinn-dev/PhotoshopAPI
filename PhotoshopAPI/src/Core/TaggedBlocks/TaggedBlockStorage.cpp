@@ -215,15 +215,17 @@ else
 	{
 		// --- PASSTHROUGH FIX (Corrected) ---
 		
-		// 1. Read the length (Use ReadBinaryData to match the rest of the file)
+		// 1. Read the length
+		// We use ReadBinaryData to match the rest of the file's conventions
 		uint32_t length = ReadBinaryData<uint32_t>(document);
 		
 		// 2. Read the raw data
+		// We initialize the vector to the correct size first
 		std::vector<uint8_t> rawData(length);
 		if (length > 0)
 		{
-			// FIX: Access the underlying array with .data()
-			document.read(rawData.data(), length);
+			// Fix: Pass the vector directly. The API handles the pointer/size internally.
+			document.read(rawData);
 		}
 		
 		// 3. Handle Padding (Align to 4 bytes)
@@ -236,10 +238,9 @@ else
 		}
 		
 		// 4. Create the Passthrough Block
-		// FIX: We declare 'passthroughBlock' explicitly here
 		auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
 		
-		// Set standard properties on the parent class
+		// Set standard properties
 		passthroughBlock->m_Signature = signature;
 		passthroughBlock->m_Offset = offset; 
 
