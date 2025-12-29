@@ -326,21 +326,25 @@ struct Layer : public MaskMixin<T>
 
             // 2. PASSTHROUGH FIX: Capture everything else!
             // We iterate over ALL blocks found in the file.
-            for (const auto& block : additionalLayerInfo.m_TaggedBlocks)
-            {
-                // We skip the blocks that this class is responsible for regenerating 
-                // to avoid duplicates on write.
-                if (block->getKey() == Enum::TaggedBlockKey::lrProtectedSetting ||
-                    block->getKey() == Enum::TaggedBlockKey::lrUnicodeName || 
-                    block->getKey() == Enum::TaggedBlockKey::lrReferencePoint ||
-                    block->getKey() == Enum::TaggedBlockKey::lrSectionDivider) 
-                {
-                    continue;
-                }
+			const auto& allBlocks = additionalLayerInfo.m_TaggedBlocks.getBlocks();
 
-                // If it's an adjustment block (e.g. 'Curv', 'Levl') or anything else, keep it!
-                m_PassthroughBlocks.push_back(block);
-            }
+			for (const auto& block : allBlocks)
+			{
+				// block is a shared_ptr<TaggedBlock>, so we use arrow syntax
+				auto key = block->getKey();
+
+				// Skip the blocks that this class generates itself
+				if (key == Enum::TaggedBlockKey::lrProtectedSetting ||
+					key == Enum::TaggedBlockKey::lrUnicodeName || 
+					key == Enum::TaggedBlockKey::lrReferencePoint ||
+					key == Enum::TaggedBlockKey::lrSectionDivider) 
+				{
+					continue;
+				}
+
+				// Store the adjustment data (Curves, Levels, etc.)
+				m_PassthroughBlocks.push_back(block);
+			}
 		}
 	}
 

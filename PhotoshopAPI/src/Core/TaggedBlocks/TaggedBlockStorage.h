@@ -22,6 +22,9 @@ struct TaggedBlockStorage : public FileSection
 	TaggedBlockStorage() = default;
 	TaggedBlockStorage(std::vector<std::shared_ptr<TaggedBlock>> taggedBlocks);
 
+	/// Expose all blocks for passthrough handling
+    const std::vector<std::shared_ptr<TaggedBlock>>& getBlocks() const { return m_TaggedBlocks; }
+
 	// Retrieve the object represented by the specified tagged block. Note, this returns the first instance rather than all instances
 	// We assume tagged blocks are unique but this may not always be the case. Returns nullptr if no type is found.
 	// Usage: specify the type of tagged block you want to retrieve with the template argument as well as the key.
