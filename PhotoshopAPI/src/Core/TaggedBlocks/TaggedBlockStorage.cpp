@@ -229,7 +229,6 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 					document.skip(paddingBytes);
 			}
 
-			PSAPI_LOG("Read", "Trying to store unknown block : %s", keyStr.u8string().c_str());
 
 			// 4. Create the Passthrough Block
 			auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
@@ -266,7 +265,7 @@ else
 					document.skip(paddingBytes);
 			}
 
-			PSAPI_LOG("Read", "Trying to store empty? block : %s", keyStr.u8string().c_str());
+			// PSAPI_LOG("Read", "Trying to store empty? block : %s", keyStr.u8string().c_str());
 
 			// 4. Create the Passthrough Block
 			auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
