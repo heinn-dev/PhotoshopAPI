@@ -203,7 +203,7 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 			this->m_TaggedBlocks.push_back(lrLinkedTaggedBlock);
 			return lrLinkedTaggedBlock;
 		}
-else
+		else
 		{
 		// --- PASSTHROUGH FIX (Dynamic Padding) ---
 
@@ -226,10 +226,10 @@ else
 			{
 				uint32_t paddingBytes = (padding - (length % padding)) % padding;
 				if (paddingBytes > 0)
-				{
 					document.skip(paddingBytes);
-				}
 			}
+
+			PSAPI_LOG("Read", "Trying to store unknown block : %s", keyStr.u8string().c_str());
 
 			// 4. Create the Passthrough Block
 			auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
@@ -243,40 +243,39 @@ else
 	}
 else
 	{
-		// --- PASSTHROUGH FIX (Corrected) ---
-		
-		// 1. Read the length
-		// We use ReadBinaryData to match the rest of the file's conventions
-		uint32_t length = ReadBinaryData<uint32_t>(document);
-		
-		// 2. Read the raw data
-		// We initialize the vector to the correct size first
-		std::vector<uint8_t> rawData(length);
 
-		if (length > 0)
-		{
-			document.read(rawData);
-		}
-		
-		// 3. Handle Padding (Align to 4 bytes)
-		// PSDs align these blocks to 4 bytes. 
-		uint32_t paddedLength = ((length + 3) & ~3);
-		uint32_t paddingToSkip = paddedLength - length;
-		if (paddingToSkip > 0)
-		{
-			document.skip(paddingToSkip);
-		}
-		
-		// 4. Create the Passthrough Block
-		auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
-		
-		// Set standard properties
-		passthroughBlock->m_Signature = signature;
-		passthroughBlock->m_Offset = offset; 
+			// 1. Read the length
+			uint32_t length = ReadBinaryData<uint32_t>(document);
 
-		// Store it and return
-		this->m_TaggedBlocks.push_back(passthroughBlock);
-		return passthroughBlock;
+			// 2. Read the raw data
+			std::vector<uint8_t> rawData(length);
+			if (length > 0)
+			{
+				document.read(rawData);
+			}
+
+			// 3. Handle Padding (Respect the function argument!)
+			// We MUST use the 'padding' variable passed to this function.
+			// - Adjustment Layers will pass 4.
+			// - Standard Layers/Images will pass 1.
+			// My previous code forced 4, which broke the reading of 'ImageData.psb'.
+			if (padding > 0)
+			{
+				uint32_t paddingBytes = (padding - (length % padding)) % padding;
+				if (paddingBytes > 0)
+					document.skip(paddingBytes);
+			}
+
+			PSAPI_LOG("Read", "Trying to store empty? block : %s", keyStr.u8string().c_str());
+
+			// 4. Create the Passthrough Block
+			auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
+
+			passthroughBlock->m_Signature = signature;
+			passthroughBlock->m_Offset = offset;
+
+			this->m_TaggedBlocks.push_back(passthroughBlock);
+			return passthroughBlock;
 	}
 }
 
