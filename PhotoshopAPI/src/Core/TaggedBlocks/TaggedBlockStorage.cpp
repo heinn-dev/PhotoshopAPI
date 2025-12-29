@@ -203,9 +203,9 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 			this->m_TaggedBlocks.push_back(lrLinkedTaggedBlock);
 			return lrLinkedTaggedBlock;
 		}
-		else
+else
 		{
-			// --- PASSTHROUGH FIX (For Known-but-Unhandled Keys like 'Curv') ---
+			// --- PASSTHROUGH FIX (For Known-but-Unhandled Keys) ---
 
 			// 1. Read the length
 			uint32_t length = ReadBinaryData<uint32_t>(document);
@@ -217,16 +217,17 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 				document.read(rawData);
 			}
 
-			// 3. Handle Padding
-			// Use the 'padding' argument passed to the function to calculate alignment
-			uint32_t paddingBytes = (padding - (length % padding)) % padding;
-			if (paddingBytes > 0)
+			// 3. Handle Padding (FORCE 4-byte alignment)
+			// Layer Info blocks are always padded to 4 bytes, regardless of the function argument.
+			// This matches the logic we used in the outer 'else'.
+			uint32_t paddedLength = ((length + 3) & ~3);
+			uint32_t paddingToSkip = paddedLength - length;
+			if (paddingToSkip > 0)
 			{
-				document.skip(paddingBytes);
+				document.skip(paddingToSkip);
 			}
 
 			// 4. Create the Passthrough Block
-			// 'keyStr' is available from the outer scope
 			auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
 
 			passthroughBlock->m_Signature = signature;
