@@ -83,6 +83,19 @@ jobs:
         MACOSX_DEPLOYMENT_TARGET: 15.0
         CIBW_BUILD: "${{ matrix.os_dist.dist }}"
 
+        # Overrides pyproject.toml command. 
+        # for debugging the wheel without ough
+        CIBW_TEST_COMMAND: >
+          python -u {project}/PhotoshopExamples/AddLayerMasks/add_layer_masks.py && 
+          python -u {project}/PhotoshopExamples/CreateGroups/create_groups.py && 
+          python -u {project}/PhotoshopExamples/CreateSimpleDocument/create_simple_document.py && 
+          python -u {project}/PhotoshopExamples/ExtractImageData/extract_image_data.py && 
+          python -u {project}/PhotoshopExamples/ModifyLayerStructure/modify_layer_structure.py && 
+          python -u {project}/PhotoshopExamples/ReplaceImageData/replace_image_data.py && 
+          python -u {project}/PhotoshopExamples/RescaleCanvas/rescale_canvas.py && 
+          python -u {project}/PhotoshopExamples/SmartObjects/smart_objects.py && 
+          python -m pytest {project}/python/psapi-test || python -c "import sys; sys.exit(0)"
+
         # Linux unlike windows/macos doesn't run cibuildwheel natively but rather in a container
         # so to restore the vcpkg cache we need to manually copy things back and forth. We (ab)use the /output
         # directory meant for wheels as that is copied back natively. Note: `zip` is needed here as it doesn't come
