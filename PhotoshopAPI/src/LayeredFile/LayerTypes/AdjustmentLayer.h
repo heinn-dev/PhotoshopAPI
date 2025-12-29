@@ -15,6 +15,12 @@ struct AdjustmentLayer : Layer<T>
 
 	AdjustmentLayer() = default;
 
+	AdjustmentLayer(const LayerRecord& layerRecord, ChannelImageData& channelImageData, const FileHeader& header) 
+        : Layer<T>(layerRecord, channelImageData, header)
+    {
+        // No specific parsing logic needed here yet, 
+        // as we are relying on the base class to hold the data.
+    }
 };
 
 extern template struct AdjustmentLayer<bpp8_t>;

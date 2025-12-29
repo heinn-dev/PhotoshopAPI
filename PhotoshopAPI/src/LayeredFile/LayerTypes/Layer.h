@@ -308,8 +308,9 @@ struct Layer : public MaskMixin<T>
 
 		if (layerRecord.m_AdditionalLayerInfo.has_value())
 		{
-			// Get the reference point (if it is there)
 			auto& additionalLayerInfo = layerRecord.m_AdditionalLayerInfo.value();
+
+			// 1. Parse standard blocks (Existing logic)
 			auto reference_point = additionalLayerInfo.get_tagged_block<ReferencePointTaggedBlock>();
 			if (reference_point)
 			{
@@ -317,12 +318,29 @@ struct Layer : public MaskMixin<T>
 				m_ReferencePointY.emplace(reference_point->m_ReferenceY);
 			}
 			
-			// Get the unicode layer name (if it is there) and override the pascal string name
 			auto unicode_name = additionalLayerInfo.get_tagged_block<UnicodeLayerNameTaggedBlock>();
 			if (unicode_name)
 			{
 				m_LayerName = unicode_name->m_Name.string();
 			}
+
+            // 2. PASSTHROUGH FIX: Capture everything else!
+            // We iterate over ALL blocks found in the file.
+            for (const auto& block : additionalLayerInfo.m_TaggedBlocks)
+            {
+                // We skip the blocks that this class is responsible for regenerating 
+                // to avoid duplicates on write.
+                if (block->getKey() == Enum::TaggedBlockKey::lrProtectedSetting ||
+                    block->getKey() == Enum::TaggedBlockKey::lrUnicodeName || 
+                    block->getKey() == Enum::TaggedBlockKey::lrReferencePoint ||
+                    block->getKey() == Enum::TaggedBlockKey::lrSectionDivider) 
+                {
+                    continue;
+                }
+
+                // If it's an adjustment block (e.g. 'Curv', 'Levl') or anything else, keep it!
+                m_PassthroughBlocks.push_back(block);
+            }
 		}
 	}
 
@@ -459,6 +477,12 @@ protected:
 		auto protectionSettingsPtr = std::make_shared<ProtectedSettingTaggedBlock>(m_IsLocked);
 		blockVec.push_back(protectionSettingsPtr);
 
+		// Append our preserved passthrough blocks
+		if (!m_PassthroughBlocks.empty())
+        {
+            blockVec.insert(blockVec.end(), m_PassthroughBlocks.begin(), m_PassthroughBlocks.end());
+        }
+
 		return blockVec;
 	}
 
@@ -535,6 +559,9 @@ protected:
 	/// currently this is only used for roundtripping, therefore optional. This value must be within the layers bounding box (or no
 	/// more than .5 away since it is a double)
 	std::optional<double> m_ReferencePointY = std::nullopt;
+
+	/// Storage for TaggedBlocks that we don't explicitly parse but want to preserve (e.g. Curves, Levels)
+	std::vector<std::shared_ptr<TaggedBlock>> m_PassthroughBlocks;
 };
 
 

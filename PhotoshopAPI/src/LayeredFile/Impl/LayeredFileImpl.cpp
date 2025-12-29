@@ -82,7 +82,8 @@ namespace _Impl
 			CHECK_TAGGED_BLOCK(Enum::TaggedBlockKey::adjPhotoFilter) ||
 			CHECK_TAGGED_BLOCK(Enum::TaggedBlockKey::adjSelectiveColor))
 		{
-			return std::make_shared<AdjustmentLayer<T>>();
+			return std::make_shared<AdjustmentLayer<T>>(layerRecord, channelImageData, header);
+			// return std::make_shared<AdjustmentLayer<T>>();
 		}
 
 		if (CHECK_TAGGED_BLOCK(Enum::TaggedBlockKey::vecOriginData) ||
