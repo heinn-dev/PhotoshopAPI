@@ -205,10 +205,35 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 		}
 		else
 		{
-			auto baseTaggedBlock = std::make_shared<TaggedBlock>();
-			baseTaggedBlock->read(document, header, offset, signature, taggedBlock.value(), padding);
-			this->m_TaggedBlocks.push_back(baseTaggedBlock);
-			return baseTaggedBlock;
+			// --- PASSTHROUGH FIX (For Known-but-Unhandled Keys like 'Curv') ---
+
+			// 1. Read the length
+			uint32_t length = ReadBinaryData<uint32_t>(document);
+
+			// 2. Read the raw data
+			std::vector<uint8_t> rawData(length);
+			if (length > 0)
+			{
+				document.read(rawData);
+			}
+
+			// 3. Handle Padding
+			// Use the 'padding' argument passed to the function to calculate alignment
+			uint32_t paddingBytes = (padding - (length % padding)) % padding;
+			if (paddingBytes > 0)
+			{
+				document.skip(paddingBytes);
+			}
+
+			// 4. Create the Passthrough Block
+			// 'keyStr' is available from the outer scope
+			auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
+
+			passthroughBlock->m_Signature = signature;
+			passthroughBlock->m_Offset = offset;
+
+			this->m_TaggedBlocks.push_back(passthroughBlock);
+			return passthroughBlock;
 		}
 	}
 else
