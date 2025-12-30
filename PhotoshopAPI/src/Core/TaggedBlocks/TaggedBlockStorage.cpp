@@ -185,21 +185,21 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 		else if (taggedBlock.value() == Enum::TaggedBlockKey::lrPlaced)
 		{
 			auto lrPlacedBlock = std::make_shared<PlacedLayerTaggedBlock>();
-			lrPlacedBlock->read(document, offset, taggedBlock.value(), signature);
+			lrPlacedBlock->read(document, header, offset, taggedBlock.value(), signature, keyStr);
 			this->m_TaggedBlocks.push_back(lrPlacedBlock);
 			return lrPlacedBlock;
 		}
 		else if (taggedBlock.value() == Enum::TaggedBlockKey::lrPlacedData)
 		{
 			auto lrPlacedDataBlock = std::make_shared<PlacedLayerDataTaggedBlock>();
-			lrPlacedDataBlock->read(document, offset, taggedBlock.value(), signature);
+			lrPlacedDataBlock->read(document, header, offset, taggedBlock.value(), signature, keyStr);
 			this->m_TaggedBlocks.push_back(lrPlacedDataBlock);
 			return lrPlacedDataBlock;
 		}
 		else if (taggedBlock.value() == Enum::TaggedBlockKey::lrLinked || taggedBlock.value() == Enum::TaggedBlockKey::lrLinked_8Byte)
 		{
 			auto lrLinkedTaggedBlock = std::make_shared<LinkedLayerTaggedBlock>();
-			lrLinkedTaggedBlock->read(document, header, offset, taggedBlock.value(), signature, padding);
+			lrLinkedTaggedBlock->read(document, header, offset, taggedBlock.value(), signature, keyStr, padding);
 			this->m_TaggedBlocks.push_back(lrLinkedTaggedBlock);
 			return lrLinkedTaggedBlock;
 		}
@@ -208,7 +208,15 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 		// --- PASSTHROUGH FIX (Dynamic Padding) ---
 
 			// 1. Read the length
-			uint32_t length = ReadBinaryData<uint32_t>(document);
+			uint64_t length = 0u;
+			if (Enum::isTaggedBlockSizeUint64(taggedBlock.value()) && header.m_Version == Enum::Version::Psb)
+			{
+				length = ReadBinaryData<uint64_t>(document);
+			}
+			else
+			{
+				length = ReadBinaryData<uint32_t>(document);
+			}
 
 			// 2. Read the raw data
 			std::vector<uint8_t> rawData(length);

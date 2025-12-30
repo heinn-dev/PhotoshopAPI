@@ -418,21 +418,22 @@ std::string LinkedLayerItem::Data::generate_file_type(const std::filesystem::pat
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-void LinkedLayerTaggedBlock::read(File& document, const FileHeader& header, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature, [[maybe_unused]] const uint16_t padding /*= 1u*/)
+void LinkedLayerTaggedBlock::read(File& document, const FileHeader& header, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature, const std::string& keyStr, [[maybe_unused]] const uint16_t padding /*= 1u*/)
 {
 	m_Key = key;
 	m_Offset = offset;
 	m_Signature = signature;
+	m_LinkKey = keyStr;
 
 	uint64_t toRead = 0;
-	if (m_Key == Enum::TaggedBlockKey::lrLinked || (m_Key == Enum::TaggedBlockKey::lrLinked_8Byte && header.m_Version == Enum::Version::Psd))
+	if (m_LinkKey == "lnkE")
 	{
 		uint32_t length = ReadBinaryData<uint32_t>(document);
 		length = RoundUpToMultiple<uint32_t>(length, 4u);
 		toRead = length;
 		m_Length = length;
 	}
-	else if (m_Key == Enum::TaggedBlockKey::lrLinked_8Byte && header.m_Version == Enum::Version::Psb)
+	else if (header.m_Version == Enum::Version::Psb)
 	{
 		uint64_t length = ReadBinaryData<uint64_t>(document);
 		length = RoundUpToMultiple<uint64_t>(length, 4u);
@@ -441,7 +442,10 @@ void LinkedLayerTaggedBlock::read(File& document, const FileHeader& header, cons
 	}
 	else
 	{
-		PSAPI_LOG_ERROR("LinkedLayer", "Unknown tagged block key, aborting parsing");
+		uint32_t length = ReadBinaryData<uint32_t>(document);
+		length = RoundUpToMultiple<uint32_t>(length, 4u);
+		toRead = length;
+		m_Length = length;
 	}
 
 	// A linked Layer tagged block may contain any number of LinkedLayers, and there is no explicit

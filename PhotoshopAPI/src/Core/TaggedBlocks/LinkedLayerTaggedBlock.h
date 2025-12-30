@@ -98,7 +98,7 @@ struct LinkedLayerTaggedBlock : TaggedBlock
 	std::string m_LinkKey = "lnk2";
 	std::vector<LinkedLayerItem::Data> m_LayerData;	// A single LinkedLayer block may have multiple file descriptions stored in it
 
-	void read(File& document, const FileHeader& header, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature, const uint16_t padding = 1u);
+	void read(File& document, const FileHeader& header, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature, const std::string& keyStr, const uint16_t padding = 1u);
 	void write(File& document, const FileHeader& header, ProgressCallback& callback, const uint16_t padding = 1u) override;
 };
 

@@ -72,7 +72,7 @@ struct PlacedLayerTaggedBlock : TaggedBlock
 	PlacedLayer::Transform m_Transform{};
 	Descriptors::Descriptor m_WarpInformation;
 
-	void read(File& document, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature);
+	void read(File& document, const FileHeader& header, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature, const std::string& keyStr);
 	void write(File& document, const FileHeader& header, ProgressCallback& callback, const uint16_t padding = 1u) override;
 
 
@@ -103,7 +103,7 @@ struct PlacedLayerDataTaggedBlock : TaggedBlock
 	PlacedLayerDataTaggedBlock(PlacedLayerDataTaggedBlock&&) noexcept = default;
 	PlacedLayerDataTaggedBlock& operator=(PlacedLayerDataTaggedBlock&&) noexcept = default;
 
-	void read(File& document, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature);
+	void read(File& document, const FileHeader& header, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature, const std::string& keyStr);
 	void write(File& document, const FileHeader& header, ProgressCallback& callback, const uint16_t padding = 1u) override;
 
 private:

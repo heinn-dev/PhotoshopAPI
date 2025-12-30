@@ -48,7 +48,7 @@ struct PassthroughTaggedBlock : public TaggedBlock
         m_Key = enumKey;
     }
 
-	void write(File& document, [[maybe_unused]] const FileHeader& header, [[maybe_unused]] ProgressCallback& callback, [[maybe_unused]] const uint16_t padding = 1u) override
+	void write(File& document, const FileHeader& header, [[maybe_unused]] ProgressCallback& callback, [[maybe_unused]] const uint16_t padding = 1u) override
     {
         // 1. Signature
         WriteBinaryData<uint32_t>(document, m_Signature.m_Value);
@@ -56,7 +56,7 @@ struct PassthroughTaggedBlock : public TaggedBlock
         // 2. Key
         if (m_OriginalKey.size() != 4) {
              PSAPI_LOG_ERROR("PassthroughBlock", "Invalid key length");
-             return; 
+             return;
         }
         for (char c : m_OriginalKey) {
             WriteBinaryData<uint8_t>(document, static_cast<uint8_t>(c));
@@ -64,7 +64,14 @@ struct PassthroughTaggedBlock : public TaggedBlock
 
         // 3. Length
         uint64_t dataSize = m_Data.size();
-        WriteBinaryData<uint32_t>(document, static_cast<uint32_t>(dataSize)); 
+        if (Enum::isTaggedBlockSizeUint64(m_Key) && header.m_Version == Enum::Version::Psb)
+        {
+            WriteBinaryData<uint64_t>(document, dataSize);
+        }
+        else
+        {
+            WriteBinaryData<uint32_t>(document, static_cast<uint32_t>(dataSize));
+        }
 
         // 4. Data
         document.write(m_Data);

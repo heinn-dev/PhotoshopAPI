@@ -46,13 +46,20 @@ void PlacedLayer::Transform::write(File& document)
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-void PlacedLayerTaggedBlock::read(File& document, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature)
+void PlacedLayerTaggedBlock::read(File& document, const FileHeader& header, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature, [[maybe_unused]] const std::string& keyStr)
 {
 	m_Key = key;
 	m_Offset = offset;
 	m_Signature = signature;
 
-	m_Length = ReadBinaryData<uint32_t>(document);
+	if (header.m_Version == Enum::Version::Psb)
+	{
+		m_Length = ReadBinaryData<uint64_t>(document);
+	}
+	else
+	{
+		m_Length = ReadBinaryData<uint32_t>(document);
+	}
 	auto len_offset = document.get_offset();
 
 	// The type is always going to be 'plcL' according to the docs
@@ -96,7 +103,16 @@ void PlacedLayerTaggedBlock::read(File& document, const uint64_t offset, const E
 	m_WarpInformation.read(document);
 
 	// This section is padded so we simply skip to the end
-	document.setOffset(len_offset + std::get<uint32_t>(m_Length));
+	uint64_t lengthVal = 0u;
+	if (std::holds_alternative<uint64_t>(m_Length))
+	{
+		lengthVal = std::get<uint64_t>(m_Length);
+	}
+	else
+	{
+		lengthVal = std::get<uint32_t>(m_Length);
+	}
+	document.setOffset(len_offset + lengthVal);
 }
 
 
@@ -130,13 +146,24 @@ void PlacedLayerTaggedBlock::write(File& document, const FileHeader& header, [[m
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-void PlacedLayerDataTaggedBlock::read(File& document, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature)
+void PlacedLayerDataTaggedBlock::read(File& document, const FileHeader& header, const uint64_t offset, const Enum::TaggedBlockKey key, const Signature signature, const std::string& keyStr)
 {
 	m_Key = key;
 	m_Offset = offset;
 	m_Signature = signature;
 
-	m_Length = ReadBinaryData<uint32_t>(document);
+	if (keyStr == "SoLE")
+	{
+		m_Length = ReadBinaryData<uint32_t>(document);
+	}
+	else if (header.m_Version == Enum::Version::Psb)
+	{
+		m_Length = ReadBinaryData<uint64_t>(document);
+	}
+	else
+	{
+		m_Length = ReadBinaryData<uint32_t>(document);
+	}
 	auto len_offset = document.get_offset();
 
 	// The identifier is always going to be 'soLD' according to the docs
@@ -156,7 +183,16 @@ void PlacedLayerDataTaggedBlock::read(File& document, const uint64_t offset, con
 	m_Descriptor = std::make_unique<Descriptors::Descriptor>();
 	m_Descriptor->read(document);
 	// Manually skip to the end as this section may be padded
-	document.setOffset(len_offset + std::get<uint32_t>(m_Length));
+	uint64_t lengthVal = 0u;
+	if (std::holds_alternative<uint64_t>(m_Length))
+	{
+		lengthVal = std::get<uint64_t>(m_Length);
+	}
+	else
+	{
+		lengthVal = std::get<uint32_t>(m_Length);
+	}
+	document.setOffset(len_offset + lengthVal);
 }
 
 
@@ -168,7 +204,7 @@ void PlacedLayerDataTaggedBlock::write(File& document, [[maybe_unused]] const Fi
 	// TODO: this might need to be 'SoLE' for externally linked blocks
 	WriteBinaryData<uint32_t>(document, Signature("SoLd").m_Value);
 
-	Impl::ScopedLengthBlock<uint32_t> len_block(document, padding);
+	Impl::ScopedLengthBlock<Impl::VariadicSize<uint32_t, uint64_t>> len_block(document, header, padding);
 
 	// Write key, version and descriptor version
 	Signature("soLD").write(document);
