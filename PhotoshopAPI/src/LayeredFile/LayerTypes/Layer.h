@@ -564,6 +564,12 @@ protected:
 	/// more than .5 away since it is a double)
 	std::optional<double> m_ReferencePointY = std::nullopt;
 
+	/// Get the passthrough blocks for this layer
+	const std::vector<std::shared_ptr<TaggedBlock>>& get_passthrough_blocks() const { return m_PassthroughBlocks; }
+
+	/// Add a passthrough block to this layer (useful for roundtripping or custom blocks)
+	void add_passthrough_block(std::shared_ptr<TaggedBlock> block) { m_PassthroughBlocks.push_back(block); }
+
 	/// Storage for TaggedBlocks that we don't explicitly parse but want to preserve (e.g. Curves, Levels)
 	std::vector<std::shared_ptr<TaggedBlock>> m_PassthroughBlocks;
 };

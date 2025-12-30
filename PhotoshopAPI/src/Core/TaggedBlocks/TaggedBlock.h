@@ -42,10 +42,10 @@ struct PassthroughTaggedBlock : public TaggedBlock
     std::vector<uint8_t> m_Data;
     std::string m_OriginalKey; 
 
-    PassthroughTaggedBlock(const std::string& key, std::vector<uint8_t> data) 
+    PassthroughTaggedBlock(const std::string& key, std::vector<uint8_t> data, Enum::TaggedBlockKey enumKey = Enum::TaggedBlockKey::Unknown)
         : m_Data(std::move(data)), m_OriginalKey(key)
     {
-        m_Key = Enum::TaggedBlockKey::Unknown;
+        m_Key = enumKey;
     }
 
 	void write(File& document, [[maybe_unused]] const FileHeader& header, [[maybe_unused]] ProgressCallback& callback, [[maybe_unused]] const uint16_t padding = 1u) override

@@ -231,7 +231,7 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 
 
 			// 4. Create the Passthrough Block
-			auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData));
+			auto passthroughBlock = std::make_shared<PassthroughTaggedBlock>(keyStr, std::move(rawData), taggedBlock.value());
 
 			passthroughBlock->m_Signature = signature;
 			passthroughBlock->m_Offset = offset;
