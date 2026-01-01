@@ -7,6 +7,7 @@
 #include "Layers/DeclareImageLayer.h"
 #include "Layers/DeclareGroupLayer.h"
 #include "Layers/DeclareSmartObjectLayer.h"
+#include "Layers/DeclareAdjustmentLayer.h"
 #include "Mixins/DeclareMaskMixin.h"
 #include "DeclareSmartObjectWarp.h"
 #include "DeclareEnums.h"
@@ -54,6 +55,10 @@ PYBIND11_MODULE(photoshopapi, m)
 	declare_smart_object_layer<bpp8_t>(m, "_8bit");
 	declare_smart_object_layer<bpp16_t>(m, "_16bit");
 	declare_smart_object_layer<bpp32_t>(m, "_32bit");
+
+	declare_adjustment_layer<bpp8_t>(m, "_8bit");
+	declare_adjustment_layer<bpp16_t>(m, "_16bit");
+	declare_adjustment_layer<bpp32_t>(m, "_32bit");
 
 	declare_smart_object_warp(m);
 	

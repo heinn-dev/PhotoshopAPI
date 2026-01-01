@@ -8,5 +8,6 @@ from ._layer import *
 from ._image_layer import *
 from ._group_layer import *
 from ._smart_object_layer import *
+from ._adjustment_layer import *
 from ._smart_object_warp import *
 from ._layered_file import *
