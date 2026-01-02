@@ -29,7 +29,7 @@ void LayerIdTaggedBlock::read(File& document, const uint64_t offset, const Signa
 	m_LayerId = ReadBinaryData<uint32_t>(document);
 }
 
-void LayerIdTaggedBlock::write(File& document, const FileHeader& header, ProgressCallback& callback, const uint16_t padding)
+void LayerIdTaggedBlock::write(File& document, const FileHeader& /*header*/, ProgressCallback& /*callback*/, const uint16_t padding)
 {
 	WriteBinaryData<uint32_t>(document, Signature("8BIM").m_Value);
 	WriteBinaryData<uint32_t>(document, Signature("lyid").m_Value);
