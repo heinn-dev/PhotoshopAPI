@@ -329,10 +329,10 @@ struct Layer : public MaskMixin<T>
 				m_LayerName = unicode_name->m_Name.string();
 			}
 
-			auto layer_id = additionalLayerInfo.getTaggedBlock<LayerIdTaggedBlock>(Enum::TaggedBlockKey::lrId);
-			if (layer_id)
+			std::shared_ptr<LayerIdTaggedBlock> layerIdBlock = additionalLayerInfo.get_tagged_block<LayerIdTaggedBlock>();
+			if (layerIdBlock)
 			{
-				m_LayerId = layer_id->m_LayerId;
+				m_LayerId = layerIdBlock->m_LayerId;
 			}
 
             // 2. PASSTHROUGH FIX: Capture everything else!
