@@ -15,6 +15,7 @@
 #include "Core/TaggedBlocks/ProtectedSettingTaggedBlock.h"
 #include "Core/TaggedBlocks/ReferencePointTaggedBlock.h"
 #include "Core/TaggedBlocks/UnicodeLayerNameTaggedBlock.h"
+#include "Core/TaggedBlocks/LayerIdTaggedBlock.h"
 
 #include "MaskDataMixin.h"
 #include "LayeredFile/concepts.h"
@@ -79,7 +80,11 @@ struct Layer : public MaskMixin<T>
 
 	/// The layers' name. Stored as a utf-8 string
 	void name(const std::string& layer_name) noexcept { m_LayerName = layer_name; }
-	
+
+	/// The layers' ID. This is a unique identifier for the layer
+	uint32_t layer_id() const noexcept { return m_LayerId; }
+	void layer_id(uint32_t id) noexcept { m_LayerId = id; }
+
 	/// The blendmode of the layer, the `Passthrough` blendmode is only valid for groups
 	Enum::BlendMode& blendmode() noexcept { return m_BlendMode; }
 	/// The blendmode of the layer, the `Passthrough` blendmode is only valid for groups
@@ -324,6 +329,12 @@ struct Layer : public MaskMixin<T>
 				m_LayerName = unicode_name->m_Name.string();
 			}
 
+			auto layer_id = additionalLayerInfo.getTaggedBlock<LayerIdTaggedBlock>(Enum::TaggedBlockKey::lrId);
+			if (layer_id)
+			{
+				m_LayerId = layer_id->m_LayerId;
+			}
+
             // 2. PASSTHROUGH FIX: Capture everything else!
             // We iterate over ALL blocks found in the file.
 			const auto& allBlocks = additionalLayerInfo.m_TaggedBlocks.getBlocks();
@@ -335,9 +346,10 @@ struct Layer : public MaskMixin<T>
 
 				// Skip the blocks that this class generates itself
 				if (key == Enum::TaggedBlockKey::lrProtectedSetting ||
-					key == Enum::TaggedBlockKey::lrUnicodeName || 
+					key == Enum::TaggedBlockKey::lrUnicodeName ||
 					key == Enum::TaggedBlockKey::lrReferencePoint ||
-					key == Enum::TaggedBlockKey::lrSectionDivider) 
+					key == Enum::TaggedBlockKey::lrSectionDivider ||
+					key == Enum::TaggedBlockKey::lrId)
 				{
 					continue;
 				}
@@ -407,6 +419,9 @@ protected:
 
 	/// Whether the layer is locked inside of photoshop
 	bool m_IsLocked = false;
+
+	/// The layers unique identifier
+	uint32_t m_LayerId = 0u;
 
 	/// Whether the layer is a clipping mask to the layer below.
 	bool m_IsClippingMask = false;
@@ -480,6 +495,13 @@ protected:
 		// Generate our LockedSettings Tagged block
 		auto protectionSettingsPtr = std::make_shared<ProtectedSettingTaggedBlock>(m_IsLocked);
 		blockVec.push_back(protectionSettingsPtr);
+
+		// Generate our Layer ID Tagged Block
+		if (m_LayerId != 0)
+		{
+			auto layerIdPtr = std::make_shared<LayerIdTaggedBlock>(m_LayerId);
+			blockVec.push_back(layerIdPtr);
+		}
 
 		// Append our preserved passthrough blocks
 		if (!m_PassthroughBlocks.empty())

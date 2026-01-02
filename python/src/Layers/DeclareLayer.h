@@ -65,6 +65,8 @@ void declare_layer(py::module& m, const std::string& extension) {
             Whether the layer is visible
         clipping_mask: bool
             Whether the layer is clipped to the one below.
+        layer_id: int
+            The unique ID of the layer
         mask: np.ndarray
             The layers' mask channel, may be empty
         mask_disabled: bool
@@ -98,4 +100,5 @@ void declare_layer(py::module& m, const std::string& extension) {
     layer.def_property("is_locked", [](const Class& self) { return self.locked(); }, [](Class& self, bool locked) { self.locked(locked); });
     layer.def_property("is_visible", [](const Class& self) { return self.visible(); }, [](Class& self, bool visible) { self.visible(visible); });
     layer.def_property("clipping_mask", [](const Class& self) { return self.clipping_mask(); }, [](Class& self, bool is_clipped) { self.clipping_mask(is_clipped); });
+    layer.def_property("layer_id", &Class::layer_id, &Class::layer_id);
 }

@@ -16,6 +16,7 @@
 #include "ProtectedSettingTaggedBlock.h"
 #include "ReferencePointTaggedBlock.h"
 #include "UnicodeLayerNameTaggedBlock.h"
+#include "LayerIdTaggedBlock.h"
 
 PSAPI_NAMESPACE_BEGIN
 
@@ -60,6 +61,7 @@ template std::shared_ptr<ProtectedSettingTaggedBlock>	TaggedBlockStorage::getTag
 template std::shared_ptr<PlacedLayerTaggedBlock>		TaggedBlockStorage::getTaggedBlockView(const Enum::TaggedBlockKey key) const;
 template std::shared_ptr<PlacedLayerDataTaggedBlock>	TaggedBlockStorage::getTaggedBlockView(const Enum::TaggedBlockKey key) const;
 template std::shared_ptr<LinkedLayerTaggedBlock>		TaggedBlockStorage::getTaggedBlockView(const Enum::TaggedBlockKey key) const;
+template std::shared_ptr<LayerIdTaggedBlock>			TaggedBlockStorage::getTaggedBlockView(const Enum::TaggedBlockKey key) const;
 
 
 template <typename T>
@@ -87,6 +89,7 @@ template std::shared_ptr<ProtectedSettingTaggedBlock>	TaggedBlockStorage::getTag
 template std::shared_ptr<PlacedLayerTaggedBlock>		TaggedBlockStorage::getTaggedBlockView() const;
 template std::shared_ptr<PlacedLayerDataTaggedBlock>	TaggedBlockStorage::getTaggedBlockView() const;
 template std::shared_ptr<LinkedLayerTaggedBlock>		TaggedBlockStorage::getTaggedBlockView() const;
+template std::shared_ptr<LayerIdTaggedBlock>			TaggedBlockStorage::getTaggedBlockView() const;
 
 
 template <typename T>
@@ -116,6 +119,7 @@ template std::vector<std::shared_ptr<ProtectedSettingTaggedBlock>>	TaggedBlockSt
 template std::vector<std::shared_ptr<PlacedLayerTaggedBlock>>		TaggedBlockStorage::get_tagged_blocks() const;
 template std::vector<std::shared_ptr<PlacedLayerDataTaggedBlock>>	TaggedBlockStorage::get_tagged_blocks() const;
 template std::vector<std::shared_ptr<LinkedLayerTaggedBlock>>		TaggedBlockStorage::get_tagged_blocks() const;
+template std::vector<std::shared_ptr<LayerIdTaggedBlock>>			TaggedBlockStorage::get_tagged_blocks() const;
 
 
 
@@ -181,6 +185,13 @@ const std::shared_ptr<TaggedBlock> TaggedBlockStorage::readTaggedBlock(File& doc
 			lrProtectionTaggedBlock->read(document, offset, signature);
 			this->m_TaggedBlocks.push_back(lrProtectionTaggedBlock);
 			return lrProtectionTaggedBlock;
+		}
+		else if (taggedBlock.value() == Enum::TaggedBlockKey::lrId)
+		{
+			auto lrIdBlock = std::make_shared<LayerIdTaggedBlock>();
+			lrIdBlock->read(document, offset, signature);
+			this->m_TaggedBlocks.push_back(lrIdBlock);
+			return lrIdBlock;
 		}
 		else if (taggedBlock.value() == Enum::TaggedBlockKey::lrPlaced)
 		{
