@@ -116,7 +116,7 @@ void bind_mask_mixin(PyClass& bound_class)
 
     // ---------------------------------------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------------------------------------
-    bound_class.def("mask_width", &Class::mask_width, R"pbdoc(
+    bound_class.def("mask_width", [](const Class& self) { return self.mask_width(); }, R"pbdoc(
 
         The masks' width in pixels. This does not always have to correspond with the layers' width.
 
@@ -124,7 +124,7 @@ void bind_mask_mixin(PyClass& bound_class)
 
     // ---------------------------------------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------------------------------------
-    bound_class.def("mask_height", &Class::mask_height, R"pbdoc(
+    bound_class.def("mask_height", [](const Class& self) { return self.mask_height(); }, R"pbdoc(
 
         The masks' height in pixels. This does not always have to correspond with the layers' height.
 

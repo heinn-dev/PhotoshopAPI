@@ -159,7 +159,7 @@ void bind_image_data_mixin(PyClass& bound_class)
 		as that function is better parallelized. So if you wish to extract more than a couple channels it is recommended
 		to get all of them.
 
-		:param psapi.enum.ColorMode key: The key to access.
+		:param psapi.enum.ChannelID key: The key to access.
 
 		:raises ValueError: if the specified index does not exist on the layer 
 

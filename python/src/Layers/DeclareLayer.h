@@ -90,7 +90,7 @@ void declare_layer(py::module& m, const std::string& extension) {
 
     bind_mask_mixin<T, Class, PyClass>(layer);
 
-    layer.def_property("name", &Class::name, &Class::name);		
+    layer.def_property("name", [](const Class& self) { return self.name(); }, [](Class& self, const std::string& name) { self.name(name); });
     layer.def_property("blend_mode", [](const Class& self) { return self.blendmode(); }, [](Class& self, Enum::BlendMode blendmode) { self.blendmode(blendmode); });
     layer.def_property("opacity", [](const Class& self) { return self.opacity(); }, [](Class& self, float opacity) { self.opacity(opacity); });
     layer.def_property("width", [](const Class& self) { return self.width(); }, [](Class& self, uint32_t width) { self.width(width); });
@@ -100,5 +100,5 @@ void declare_layer(py::module& m, const std::string& extension) {
     layer.def_property("is_locked", [](const Class& self) { return self.locked(); }, [](Class& self, bool locked) { self.locked(locked); });
     layer.def_property("is_visible", [](const Class& self) { return self.visible(); }, [](Class& self, bool visible) { self.visible(visible); });
     layer.def_property("clipping_mask", [](const Class& self) { return self.clipping_mask(); }, [](Class& self, bool is_clipped) { self.clipping_mask(is_clipped); });
-    layer.def_property("layer_id", &Class::layer_id, &Class::layer_id);
+    layer.def_property("layer_id", [](const Class& self) { return self.layer_id(); }, [](Class& self, uint32_t id) { self.layer_id(id); });
 }
