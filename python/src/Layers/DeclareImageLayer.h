@@ -199,6 +199,17 @@ void declare_image_layer(py::module& m, const std::string& extension) {
 
 	)pbdoc");
 
+    image_layer.def_property_readonly("compression", [](const Class& self) {
+        const auto& storage = self.get_storage();
+        if (storage.empty())
+        {
+             return Enum::Compression::ZipPrediction;
+        }
+        return storage.begin()->second->compression_codec();
+    }, R"pbdoc(
+        The compression codec used for the image data of the layer.
+    )pbdoc");
+
     image_layer.def(py::init(&createImageLayerFromIntMapping<T>),
         py::arg("image_data"),
         py::arg("layer_name"),

@@ -855,6 +855,9 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 	// uses the 'buffer' as an intermediate memory area
 	for (const auto& channel : layerRecord.m_ChannelInformation)
 	{
+		// Clear the buffer before reading the next channel to ensure we do not have any data leak from the previous channel
+		std::fill(buffer.begin(), buffer.end(), 0u);
+
 		const size_t index = &channel - &layerRecord.m_ChannelInformation[0];
 		const uint64_t channelOffset = channelOffsets[index];
 
