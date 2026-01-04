@@ -48,8 +48,15 @@ namespace RLE_Impl
         uint64_t i = 0;
         uint64_t idx = 0;   // Index into decompressedData
         const auto dataSize = compressedData.size();
+        const auto decompressedSize = decompressedData.size();
 
         while (i < dataSize) {
+            // Safety check to ensure we don't write past bounds
+            if (idx >= decompressedSize) [[unlikely]]
+            {
+                break;
+            }
+
             const uint8_t value = compressedData[i];
 
             if (value == 128) [[unlikely]]
@@ -59,9 +66,18 @@ namespace RLE_Impl
             else if (value > 128)
             {
                 // Repeat the next byte after this 257-n times
-                const uint8_t repeat_val = compressedData[i + 1];
-                for (int j = 0; j <= 256 - value; ++j)
+                // Check if we have enough input data
+                if (i + 1 >= dataSize) [[unlikely]]
                 {
+                    break;
+                }
+
+                const uint8_t repeat_val = compressedData[i + 1];
+                const int count = 257 - static_cast<int>(value);
+
+                for (int j = 0; j < count; ++j)
+                {
+                    if (idx >= decompressedSize) [[unlikely]] break;
                     decompressedData[idx] = repeat_val;
                     ++idx;
                 }
@@ -70,12 +86,21 @@ namespace RLE_Impl
             else
             {
                 // Header byte indicates the next n bytes are to be read as values
-                for (int j = 0; j <= value; ++j)
+                const int count = static_cast<int>(value) + 1;
+
+                // Check if we have enough input data
+                if (i + count >= dataSize) [[unlikely]]
                 {
+                    break;
+                }
+
+                for (int j = 0; j < count; ++j)
+                {
+                    if (idx >= decompressedSize) [[unlikely]] break;
                     decompressedData[idx] = compressedData[i + j + 1];
                     ++idx;
                 }
-                i += value + 1;
+                i += count;
             }
             ++i;
         }
@@ -96,8 +121,14 @@ namespace RLE_Impl
         uint64_t i = 0;
         uint64_t idx = 0;   // Index into decompressedData
         const auto dataSize = compressedData.size();
+        const auto decompressedSize = decompressedData.size();
 
         while (i < dataSize) {
+            if (idx >= decompressedSize) [[unlikely]]
+            {
+                break;
+            }
+
             const uint8_t value = compressedData[i];
 
             if (value == 128) [[unlikely]]
@@ -107,9 +138,17 @@ namespace RLE_Impl
             else if (value > 128)
             {
                 // Repeat the next byte after this 257-n times
-                const uint8_t repeat_val = compressedData[i + 1];
-                for (int j = 0; j <= 256 - value; ++j)
+                if (i + 1 >= dataSize) [[unlikely]]
                 {
+                    break;
+                }
+
+                const uint8_t repeat_val = compressedData[i + 1];
+                const int count = 257 - static_cast<int>(value);
+
+                for (int j = 0; j < count; ++j)
+                {
+                    if (idx >= decompressedSize) [[unlikely]] break;
                     decompressedData[idx] = repeat_val;
                     ++idx;
                 }
@@ -118,12 +157,20 @@ namespace RLE_Impl
             else
             {
                 // Header byte indicates the next n bytes are to be read as values
-                for (int j = 0; j <= value; ++j)
+                const int count = static_cast<int>(value) + 1;
+
+                if (i + count >= dataSize) [[unlikely]]
                 {
+                    break;
+                }
+
+                for (int j = 0; j < count; ++j)
+                {
+                    if (idx >= decompressedSize) [[unlikely]] break;
                     decompressedData[idx] = compressedData[i + j + 1];
                     ++idx;
                 }
-                i += value + 1;
+                i += count;
             }
             ++i;
         }

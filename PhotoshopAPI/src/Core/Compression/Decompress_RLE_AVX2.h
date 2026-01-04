@@ -31,8 +31,14 @@ namespace RLE_Impl
         uint64_t i = 0;
         uint64_t idx = 0;   // Index into decompressedData
         const auto dataSize = compressedData.size();
+        const auto decompressedSize = decompressedData.size();
 
         while (i < dataSize) {
+            if (idx >= decompressedSize) [[unlikely]]
+            {
+                break;
+            }
+
             const uint8_t value = compressedData[i];
 
             if (value == 128) [[unlikely]]
@@ -42,6 +48,11 @@ namespace RLE_Impl
             else if (value > 128)
             {
                 // Repeat the next byte after this n times
+                if (i + 1 >= dataSize) [[unlikely]]
+                {
+                    break;
+                }
+
                 const uint8_t repeatValue = compressedData[i + 1];
                 __m256i ymmValue = _mm256_set1_epi8(repeatValue);
 
@@ -50,12 +61,17 @@ namespace RLE_Impl
                 // Process in chunks of 32 bytes
                 for (; remaining >= 32; remaining -= 32)
                 {
+                    if (idx + 32 > decompressedSize) [[unlikely]]
+                    {
+                        break;
+                    }
                     _mm256_storeu_si256((__m256i*)(decompressedData.data() + idx), ymmValue);
                     idx += 32;
                 }
                 // Process the remaining bytes
                 for (int j = 0; j < remaining; ++j)
                 {
+                    if (idx >= decompressedSize) [[unlikely]] break;
                     decompressedData[idx] = repeatValue;
                     ++idx;
                 }
@@ -64,10 +80,21 @@ namespace RLE_Impl
             else
             {
                 uint8_t remaining = value + 1;
+
+                // Check if we have enough input data
+                if (i + remaining + 1 > dataSize) [[unlikely]]
+                {
+                    break;
+                }
+
                 uint8_t read_offset = 0;
                 // Header byte indicates the next n bytes are to be read as values
                 for (; remaining >= 32; remaining -= 32)
                 {
+                    if (idx + 32 > decompressedSize) [[unlikely]]
+                    {
+                        break;
+                    }
                     __m256i ymmData = _mm256_loadu_si256((__m256i*)(compressedData.data() + i + read_offset + 1));
                     _mm256_storeu_si256((__m256i*)(decompressedData.data() + idx), ymmData);
                     idx += 32;
@@ -75,6 +102,7 @@ namespace RLE_Impl
                 }
                 for (; read_offset <= value; ++read_offset)
                 {
+                    if (idx >= decompressedSize) [[unlikely]] break;
                     decompressedData[idx] = compressedData[i + read_offset + 1];
                     ++idx;
                 }
@@ -97,8 +125,14 @@ namespace RLE_Impl
         uint64_t i = 0;
         uint64_t idx = 0;   // Index into decompressedData
         const auto dataSize = compressedData.size();
+        const auto decompressedSize = decompressedData.size();
 
         while (i < dataSize) {
+            if (idx >= decompressedSize) [[unlikely]]
+            {
+                break;
+            }
+
             const uint8_t value = compressedData[i];
 
             if (value == 128) [[unlikely]]
@@ -108,6 +142,11 @@ namespace RLE_Impl
             else if (value > 128)
             {
                 // Repeat the next byte after this n times
+                if (i + 1 >= dataSize) [[unlikely]]
+                {
+                    break;
+                }
+
                 const uint8_t repeatValue = compressedData[i + 1];
                 __m256i ymmValue = _mm256_set1_epi8(repeatValue);
 
@@ -116,12 +155,17 @@ namespace RLE_Impl
                 // Process in chunks of 32 bytes
                 for (; remaining >= 32; remaining -= 32)
                 {
+                    if (idx + 32 > decompressedSize) [[unlikely]]
+                    {
+                        break;
+                    }
                     _mm256_storeu_si256((__m256i*)(decompressedData.data() + idx), ymmValue);
                     idx += 32;
                 }
                 // Process the remaining bytes
                 for (int j = 0; j < remaining; ++j)
                 {
+                    if (idx >= decompressedSize) [[unlikely]] break;
                     decompressedData[idx] = repeatValue;
                     ++idx;
                 }
@@ -130,10 +174,21 @@ namespace RLE_Impl
             else
             {
                 uint8_t remaining = value + 1;
+
+                // Check if we have enough input data
+                if (i + remaining + 1 > dataSize) [[unlikely]]
+                {
+                    break;
+                }
+
                 uint8_t read_offset = 0;
                 // Header byte indicates the next n bytes are to be read as values
                 for (; remaining >= 32; remaining -= 32)
                 {
+                    if (idx + 32 > decompressedSize) [[unlikely]]
+                    {
+                        break;
+                    }
                     __m256i ymmData = _mm256_loadu_si256((__m256i*)(compressedData.data() + i + read_offset + 1));
                     _mm256_storeu_si256((__m256i*)(decompressedData.data() + idx), ymmData);
                     idx += 32;
@@ -141,6 +196,7 @@ namespace RLE_Impl
                 }
                 for (; read_offset <= value; ++read_offset)
                 {
+                    if (idx >= decompressedSize) [[unlikely]] break;
                     decompressedData[idx] = compressedData[i + read_offset + 1];
                     ++idx;
                 }
