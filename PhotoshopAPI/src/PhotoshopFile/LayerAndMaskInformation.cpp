@@ -914,7 +914,7 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 				coordinates.centerY);
 			m_ImageData[index] = std::move(channelPtr);
 		}
-		if (header.m_Depth == Enum::BitDepth::BD_32)
+		else if (header.m_Depth == Enum::BitDepth::BD_32)
 		{
 			std::span<float32_t> bufferSpan(reinterpret_cast<float32_t*>(buffer.data()), coordinates.width * coordinates.height);
 			DecompressData<float32_t>(stream, bufferSpan, channelOffset + 2u, channelCompression, header, coordinates.width, coordinates.height, channel.m_Size - 2u);
