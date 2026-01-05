@@ -832,21 +832,6 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 			}
 		}
 	}
-	std::vector<uint8_t> buffer;
-	if (header.m_Depth == Enum::BitDepth::BD_8)
-	{
-		buffer = std::vector<uint8_t>(maxWidth * maxHeight * sizeof(uint8_t));
-	}
-	else if (header.m_Depth == Enum::BitDepth::BD_16)
-	{
-		buffer = std::vector<uint8_t>(maxWidth * maxHeight * sizeof(uint16_t));
-	}
-	else if (header.m_Depth == Enum::BitDepth::BD_32)
-	{
-		buffer = std::vector<uint8_t>(maxWidth * maxHeight * sizeof(float32_t));
-	}
-
-
 	// Preallocate the ImageData vector as we need valid indices for the for each loop
 	m_ImageData.resize(layerRecord.m_ChannelInformation.size());
 	m_ChannelCompression.resize(layerRecord.m_ChannelInformation.size());
@@ -856,7 +841,8 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 	for (const auto& channel : layerRecord.m_ChannelInformation)
 	{
 		// Clear the buffer before reading the next channel to ensure we do not have any data leak from the previous channel
-		std::fill(buffer.begin(), buffer.end(), 0u);
+		// doesn't fix anything actually
+		// std::fill(buffer.begin(), buffer.end(), 0u);
 
 		const size_t index = &channel - &layerRecord.m_ChannelInformation[0];
 		const uint64_t channelOffset = channelOffsets[index];
@@ -885,6 +871,20 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 		}
 		m_ChannelCompression[index] = channelCompression;
 		FileSection::size(FileSection::size() + channel.m_Size);
+
+		std::vector<uint8_t> buffer;
+		if (header.m_Depth == Enum::BitDepth::BD_8)
+		{
+			buffer.resize(coordinates.width * coordinates.height * sizeof(uint8_t));
+		}
+		else if (header.m_Depth == Enum::BitDepth::BD_16)
+		{
+			buffer.resize(coordinates.width * coordinates.height * sizeof(uint16_t));
+		}
+		else if (header.m_Depth == Enum::BitDepth::BD_32)
+		{
+			buffer.resize(coordinates.width * coordinates.height * sizeof(float32_t));
+		}
 
 		if (header.m_Depth == Enum::BitDepth::BD_8)
 		{
