@@ -868,6 +868,8 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 			stream.read(compressionNumSpan, channelOffset);
 			compressionNum = endian_decode_be<uint16_t>(reinterpret_cast<std::byte*>(compressionNumSpan.data()));
 			channelCompression = Enum::compressionMap.at(compressionNum);
+			PSAPI_LOG_WARNING("ChannelImageData", "Channel %d: Compression %d Size %llu Offset %llu",
+				channel.m_ChannelID.index, static_cast<int>(channelCompression), channel.m_Size, channelOffset);
 		}
 		m_ChannelCompression[index] = channelCompression;
 		FileSection::size(FileSection::size() + channel.m_Size);
@@ -885,6 +887,8 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 		{
 			buffer.resize(coordinates.width * coordinates.height * sizeof(float32_t));
 		}
+
+		PSAPI_LOG_WARNING("ChannelImageData", "Buffer Address: %p Size: %zu", buffer.data(), buffer.size());
 
 		if (header.m_Depth == Enum::BitDepth::BD_8)
 		{
