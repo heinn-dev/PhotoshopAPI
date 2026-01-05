@@ -188,7 +188,9 @@ void ReadBinaryArray(File& document, std::span<T> buffer, uint64_t offset, uint6
 		PSAPI_LOG_ERROR("ReadBinaryArray", "Invalid size parameter passed, expected %zu bytes but instead got %" PRIu64 " bytes", buffer.size() * sizeof(T), size);
 	}
 
-	document.read(Util::toWritableBytes(buffer));
+	// Manual cast to span<uint8_t> because Util::toWritableBytes(span) would return a span of span object itself!
+	std::span<uint8_t> bufferBytes(reinterpret_cast<uint8_t*>(buffer.data()), buffer.size() * sizeof(T));
+	document.read(bufferBytes);
 	endianDecodeBEArray<T>(buffer);
 
 	document.setOffset(initialOffset);
@@ -252,7 +254,9 @@ void ReadBinaryArray(ByteStream& stream, std::span<T> buffer, uint64_t offset, u
 			size, sizeof(T));
 	}
 
-	stream.read(Util::toWritableBytes(buffer), offset);
+	// Manual cast to span<uint8_t> because Util::toWritableBytes(span) would return a span of the span object itself!
+	std::span<uint8_t> bufferBytes(reinterpret_cast<uint8_t*>(buffer.data()), buffer.size() * sizeof(T));
+	stream.read(bufferBytes, offset);
 	endianDecodeBEArray<T>(buffer);
 }
 
