@@ -183,13 +183,13 @@ void ReadBinaryArray(File& document, std::span<T> buffer, uint64_t offset, uint6
 		PSAPI_LOG_ERROR("ReadBinaryArray", "Was given a binary size of %" PRIu64 " but that is not cleanly divisible by the size of the datatype T, which is %i",
 			size, sizeof(T));
 	}
-	if (buffer.size() / sizeof(T) != size)
+	if (buffer.size() * sizeof(T) != size)
 	{
-		PSAPI_LOG_ERROR("ReadBinaryArray", "Invalid size parameter passed, expected %zu bytes but instead got %" PRIu64 " bytes", buffer.size() / sizeof(T), size);
+		PSAPI_LOG_ERROR("ReadBinaryArray", "Invalid size parameter passed, expected %zu bytes but instead got %" PRIu64 " bytes", buffer.size() * sizeof(T), size);
 	}
 
 	document.read(Util::toWritableBytes(buffer));
-	endianEncodeBEArray<T>(buffer);
+	endianDecodeBEArray<T>(buffer);
 
 	document.setOffset(initialOffset);
 }
@@ -252,8 +252,7 @@ void ReadBinaryArray(ByteStream& stream, std::span<T> buffer, uint64_t offset, u
 			size, sizeof(T));
 	}
 
-	std::vector<T> data(size / sizeof(T));
-	stream.read(Util::toWritableBytes(data), offset);
+	stream.read(Util::toWritableBytes(buffer), offset);
 	endianDecodeBEArray<T>(buffer);
 }
 
