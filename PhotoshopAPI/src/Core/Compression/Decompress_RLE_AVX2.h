@@ -9,6 +9,9 @@ detect AVX2 SIMD intrinsics. Including this header in your project will lead to 
 #include <cstring>
 
 #include "immintrin.h"
+#include "Util/Logger.h"
+
+#include <inttypes.h>
 
 // If we compile with C++<20 we replace the stdlib implementation with the compatibility
 // library
@@ -31,6 +34,7 @@ namespace RLE_Impl
         uint64_t i = 0;
         uint64_t idx = 0;   // Index into decompressedData
         const auto dataSize = compressedData.size();
+        const auto decompressedSize = decompressedData.size();
 
         while (i < dataSize) {
             const uint8_t value = compressedData[i];
@@ -81,6 +85,12 @@ namespace RLE_Impl
                 i += value + 1;
             }
             ++i;
+        }
+
+        // Diagnostic: Check if we filled the expected buffer size
+        if (idx != decompressedSize)
+        {
+            PSAPI_LOG_ERROR("DecompressPackBitsAVX2", "Decompression size mismatch! Wrote %" PRIu64 " bytes but expected %zu", idx, decompressedSize);
         }
     }
 

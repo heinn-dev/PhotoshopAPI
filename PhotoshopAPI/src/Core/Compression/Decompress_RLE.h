@@ -96,6 +96,7 @@ namespace RLE_Impl
         uint64_t i = 0;
         uint64_t idx = 0;   // Index into decompressedData
         const auto dataSize = compressedData.size();
+        const auto decompressedSize = decompressedData.size();
 
         while (i < dataSize) {
             const uint8_t value = compressedData[i];
@@ -126,6 +127,12 @@ namespace RLE_Impl
                 i += value + 1;
             }
             ++i;
+        }
+
+        // Diagnostic: Check if we filled the expected buffer size
+        if (idx != decompressedSize)
+        {
+            PSAPI_LOG_ERROR("DecompressPackBits", "Decompression size mismatch! Wrote %" PRIu64 " bytes but expected %zu", idx, decompressedSize);
         }
     }
 
