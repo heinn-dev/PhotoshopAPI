@@ -48,7 +48,7 @@ namespace RLE_Impl
             else if (value > 128)
             {
                 // Repeat the next byte after this n times
-                if (i + 1 >= dataSize) [[unlikely]]
+                if (i + 1 > dataSize) [[unlikely]]
                 {
                     break;
                 }
@@ -82,7 +82,7 @@ namespace RLE_Impl
                 uint8_t remaining = value + 1;
 
                 // Check if we have enough input data
-                if (i + remaining + 1 > dataSize) [[unlikely]]
+                if (i + remaining > dataSize) [[unlikely]]
                 {
                     break;
                 }
@@ -142,7 +142,7 @@ namespace RLE_Impl
             else if (value > 128)
             {
                 // Repeat the next byte after this n times
-                if (i + 1 >= dataSize) [[unlikely]]
+                if (i + 1 > dataSize) [[unlikely]]
                 {
                     break;
                 }
@@ -176,7 +176,7 @@ namespace RLE_Impl
                 uint8_t remaining = value + 1;
 
                 // Check if we have enough input data
-                if (i + remaining + 1 > dataSize) [[unlikely]]
+                if (i + remaining > dataSize) [[unlikely]]
                 {
                     break;
                 }

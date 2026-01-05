@@ -67,7 +67,7 @@ namespace RLE_Impl
             {
                 // Repeat the next byte after this 257-n times
                 // Check if we have enough input data
-                if (i + 1 >= dataSize) [[unlikely]]
+                if (i + 1 > dataSize) [[unlikely]]
                 {
                     break;
                 }
@@ -89,7 +89,7 @@ namespace RLE_Impl
                 const int count = static_cast<int>(value) + 1;
 
                 // Check if we have enough input data
-                if (i + count >= dataSize) [[unlikely]]
+                if (i + count > dataSize) [[unlikely]]
                 {
                     break;
                 }
@@ -138,7 +138,7 @@ namespace RLE_Impl
             else if (value > 128)
             {
                 // Repeat the next byte after this 257-n times
-                if (i + 1 >= dataSize) [[unlikely]]
+                if (i + 1 > dataSize) [[unlikely]]
                 {
                     break;
                 }
@@ -159,7 +159,7 @@ namespace RLE_Impl
                 // Header byte indicates the next n bytes are to be read as values
                 const int count = static_cast<int>(value) + 1;
 
-                if (i + count >= dataSize) [[unlikely]]
+                if (i + count > dataSize) [[unlikely]]
                 {
                     break;
                 }
@@ -195,7 +195,16 @@ void DecompressRLE(ByteStream& stream, std::span<T> buffer, uint64_t offset, con
             buffer.size());
     }
 
-    // Photoshop first stores the byte counts of all the scanlines, this is 2 or 4 bytes depending on 
+    // Validate that the compressed data is large enough to contain the scanline table
+    uint64_t scanlineTableSize = static_cast<uint64_t>(SwapPsdPsb<uint16_t, uint32_t>(header.m_Version)) * height;
+    if (scanlineTableSize > compressedSize)
+    {
+        PSAPI_LOG_WARNING("DecompressRLE", "Channel size (%" PRIu64 ") too small for scanline table (%" PRIu64 " bytes needed for %" PRIu32 " scanlines). Skipping decompression.",
+            compressedSize, scanlineTableSize, height);
+        return; // Leave buffer as zeros
+    }
+
+    // Photoshop first stores the byte counts of all the scanlines, this is 2 or 4 bytes depending on
     // if the document is PSD or PSB
     uint64_t scanlineTotalSize = 0u;
     std::vector<uint32_t> scanlineSizes;

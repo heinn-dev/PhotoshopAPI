@@ -861,6 +861,14 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 		const size_t index = &channel - &layerRecord.m_ChannelInformation[0];
 		const uint64_t channelOffset = channelOffsets[index];
 
+		// Validate offset bounds before attempting to read
+		if (channelOffset >= stream.getSize() || channelOffset + channel.m_Size > stream.getSize())
+		{
+			PSAPI_LOG_WARNING("ChannelImageData", "Channel %d: Invalid offset %" PRIu64 " or size %" PRIu64 " for stream size %" PRIu64 ", skipping",
+				channel.m_ChannelID.index, channelOffset, channel.m_Size, stream.getSize());
+			continue;
+		}
+
 		// Generate our coordinates from the layer extents
 		ChannelCoordinates coordinates = generateChannelCoordinates(ChannelExtents(layerRecord.m_Top, layerRecord.m_Left, layerRecord.m_Bottom, layerRecord.m_Right));
 
@@ -874,6 +882,28 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 				coordinates = generateChannelCoordinates(ChannelExtents(mask.m_Top, mask.m_Left, mask.m_Bottom, mask.m_Right));
 			}
 		}
+
+		// Handle zero-dimension channels - skip decompression for empty layers
+		if (coordinates.width <= 0 || coordinates.height <= 0)
+		{
+			PSAPI_LOG_DEBUG("ChannelImageData", "Channel %d: Zero dimensions (%dx%d), skipping decompression",
+				channel.m_ChannelID.index, coordinates.width, coordinates.height);
+			// Still need to record compression info for consistency
+			Enum::Compression channelCompression = Enum::Compression::Raw;
+			if (channel.m_Size >= 2)
+			{
+				uint16_t compressionNum = 0;
+				auto compressionNumSpan = Util::toWritableBytes(compressionNum);
+				stream.read(compressionNumSpan, channelOffset);
+				compressionNum = endian_decode_be<uint16_t>(reinterpret_cast<std::byte*>(compressionNumSpan.data()));
+				channelCompression = Enum::compressionMap.at(compressionNum);
+			}
+			m_ChannelCompression[index] = channelCompression;
+			FileSection::size(FileSection::size() + channel.m_Size);
+			// Create an empty channel - m_ImageData[index] stays nullptr
+			continue;
+		}
+
 		// Get the compression of the channel. We must read it this way as the offset has to be correct before parsing
 		Enum::Compression channelCompression = Enum::Compression::ZipPrediction;
 		{
