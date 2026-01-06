@@ -87,11 +87,6 @@ namespace RLE_Impl
             ++i;
         }
 
-        // Diagnostic: Check if we filled the expected buffer size
-        if (idx != decompressedSize)
-        {
-            PSAPI_LOG_ERROR("DecompressPackBitsAVX2", "Decompression size mismatch! Wrote %" PRIu64 " bytes but expected %zu", idx, decompressedSize);
-        }
     }
 
 
