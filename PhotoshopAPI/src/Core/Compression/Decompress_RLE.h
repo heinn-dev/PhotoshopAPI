@@ -29,6 +29,11 @@
 #else
 #include <span>
 #endif
+
+PSAPI_NAMESPACE_BEGIN
+
+
+namespace RLE_Impl
 {
     // This is the packbits algorithm described here: https://en.wikipedia.org/wiki/PackBits we iterate byte by byte and decompress
     // a singular scanline at a time
@@ -123,7 +128,12 @@
             }
             ++i;
         }
-     }
+
+        // Diagnostic: Check if we filled the expected buffer size
+        if (idx != decompressedSize)
+        {
+            PSAPI_LOG_ERROR("DecompressPackBits", "Decompression size mismatch! Wrote %" PRIu64 " bytes but expected %zu", idx, decompressedSize);
+        }
     }
 
 }
