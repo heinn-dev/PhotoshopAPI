@@ -868,8 +868,8 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 			stream.read(compressionNumSpan, channelOffset);
 			compressionNum = endian_decode_be<uint16_t>(reinterpret_cast<std::byte*>(compressionNumSpan.data()));
 			channelCompression = Enum::compressionMap.at(compressionNum);
-			PSAPI_LOG_WARNING("ChannelImageData", "Channel %d: Compression %d Size %llu Offset %llu",
-				channel.m_ChannelID.index, static_cast<int>(channelCompression), channel.m_Size, channelOffset);
+			// PSAPI_LOG_WARNING("ChannelImageData", "Channel %d: Compression %d Size %llu Offset %llu",
+				// channel.m_ChannelID.index, static_cast<int>(channelCompression), channel.m_Size, channelOffset);
 		}
 		m_ChannelCompression[index] = channelCompression;
 		FileSection::size(FileSection::size() + channel.m_Size);
@@ -888,7 +888,7 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 			buffer.resize(coordinates.width * coordinates.height * sizeof(float32_t), 0u);
 		}
 
-		PSAPI_LOG_WARNING("ChannelImageData", "Buffer Address: %p Size: %zu Dimensions: %dx%d",
+		// PSAPI_LOG_WARNING("ChannelImageData", "Buffer Address: %p Size: %zu Dimensions: %dx%d",
 			buffer.data(), buffer.size(), coordinates.width, coordinates.height);
 
 		if (header.m_Depth == Enum::BitDepth::BD_8)
@@ -899,7 +899,7 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 			// Diagnostic: Log first and last bytes after decompression
 			if (buffer.size() >= 4)
 			{
-				PSAPI_LOG_WARNING("ChannelImageData", "Channel %d after decompress - first 4: %02x %02x %02x %02x, last 4: %02x %02x %02x %02x",
+				// PSAPI_LOG_WARNING("ChannelImageData", "Channel %d after decompress - first 4: %02x %02x %02x %02x, last 4: %02x %02x %02x %02x",
 					channel.m_ChannelID.index,
 					buffer[0], buffer[1], buffer[2], buffer[3],
 					buffer[buffer.size()-4], buffer[buffer.size()-3], buffer[buffer.size()-2], buffer[buffer.size()-1]);
