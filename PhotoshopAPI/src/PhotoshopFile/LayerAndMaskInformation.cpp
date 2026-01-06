@@ -889,7 +889,7 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 		}
 
 		// PSAPI_LOG_WARNING("ChannelImageData", "Buffer Address: %p Size: %zu Dimensions: %dx%d",
-			buffer.data(), buffer.size(), coordinates.width, coordinates.height);
+			// buffer.data(), buffer.size(), coordinates.width, coordinates.height);
 
 		if (header.m_Depth == Enum::BitDepth::BD_8)
 		{
@@ -897,13 +897,13 @@ void ChannelImageData::read(ByteStream& stream, const FileHeader& header, const 
 			DecompressData<uint8_t>(stream, bufferSpan, channelOffset + 2u, channelCompression, header, coordinates.width, coordinates.height, channel.m_Size - 2u);
 
 			// Diagnostic: Log first and last bytes after decompression
-			if (buffer.size() >= 4)
-			{
-				// PSAPI_LOG_WARNING("ChannelImageData", "Channel %d after decompress - first 4: %02x %02x %02x %02x, last 4: %02x %02x %02x %02x",
-					channel.m_ChannelID.index,
-					buffer[0], buffer[1], buffer[2], buffer[3],
-					buffer[buffer.size()-4], buffer[buffer.size()-3], buffer[buffer.size()-2], buffer[buffer.size()-1]);
-			}
+			// if (buffer.size() >= 4)
+			// {
+			// 	PSAPI_LOG_WARNING("ChannelImageData", "Channel %d after decompress - first 4: %02x %02x %02x %02x, last 4: %02x %02x %02x %02x",
+			// 		channel.m_ChannelID.index,
+			// 		buffer[0], buffer[1], buffer[2], buffer[3],
+			// 		buffer[buffer.size()-4], buffer[buffer.size()-3], buffer[buffer.size()-2], buffer[buffer.size()-1]);
+			// }
 
 			auto channelPtr = std::make_unique<channel_wrapper>(
 				channelCompression,
