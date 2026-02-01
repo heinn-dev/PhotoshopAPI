@@ -168,11 +168,16 @@ void XMPMetadataBlock::read(File& document, const uint64_t offset)
 	PSAPI_PROFILE_FUNCTION();
 	m_UniqueId = Enum::ImageResource::XMPMetadata;
 	m_Name.read(document, 2u);
-	m_DataSize = RoundUpToMultiple(ReadBinaryData<uint32_t>(document), 2u);
+	
+	uint32_t dataSize = ReadBinaryData<uint32_t>(document);
+	m_DataSize = RoundUpToMultiple(dataSize, 2u);
+
 	auto size = static_cast<uint64_t>(4u) + 2u + m_Name.size() + 4u + m_DataSize;
 	FileSection::initialize(offset, size);
 
-	m_RawData = ReadBinaryArray<uint8_t>(document, m_DataSize);
+	m_RawData = ReadBinaryArray<uint8_t>(document, dataSize);
+	// Skip the padding bytes
+	document.skip(m_DataSize - dataSize);
 }
 
 
@@ -187,7 +192,7 @@ void XMPMetadataBlock::write(File& document)
 
 	WriteBinaryData<uint16_t>(document, Enum::imageResourceToInt(m_UniqueId));
 	m_Name.write(document);
-	WriteBinaryData<uint32_t>(document, m_DataSize);	// This value is already padded
+	WriteBinaryData<uint32_t>(document, static_cast<uint32_t>(m_RawData.size()));	// Write the unpadded size
 
 	WriteBinaryArray<uint8_t>(document, std::move(m_RawData));
 

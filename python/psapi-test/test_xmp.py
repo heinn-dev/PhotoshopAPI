@@ -42,6 +42,13 @@ class TestXMPMetadata(unittest.TestCase):
         # Verify XMP metadata
         read_xmp = read_file.xmp_metadata
         self.assertIsNotNone(read_xmp)
+        
+        # Debugging output
+        print(f"\nOriginal size: {xmp_array.size}, Read size: {read_xmp.size}")
+        if xmp_array.size != read_xmp.size:
+            print(f"Original: {xmp_array.tobytes()}")
+            print(f"Read: {read_xmp.tobytes()}")
+
         self.assertTrue(np.array_equal(read_xmp, xmp_array))
         
         # Verify text content
