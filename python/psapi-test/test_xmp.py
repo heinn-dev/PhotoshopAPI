@@ -24,7 +24,11 @@ class TestXMPMetadata(unittest.TestCase):
         layered_file.xmp_metadata = xmp_array
 
         # Add a dummy layer because Photoshop files require at least one layer
-        img_data = np.zeros((3, 100, 100), dtype=np.uint8)
+        img_data = {
+            0: np.zeros((100, 100), dtype=np.uint8),
+            1: np.zeros((100, 100), dtype=np.uint8),
+            2: np.zeros((100, 100), dtype=np.uint8)
+        }
         layer = psapi.ImageLayer_8bit(img_data, "Layer Red", width=100, height=100)
         layered_file.add_layer(layer)
         
