@@ -22,6 +22,11 @@ class TestXMPMetadata(unittest.TestCase):
         
         # Set the XMP metadata
         layered_file.xmp_metadata = xmp_array
+
+        # Add a dummy layer because Photoshop files require at least one layer
+        img_data = np.zeros((3, 100, 100), dtype=np.uint8)
+        layer = psapi.ImageLayer_8bit(img_data, "Layer Red", width=100, height=100)
+        layered_file.add_layer(layer)
         
         # Write the file
         output_path = self._get_output_path("test_xmp_roundtrip.psd")
