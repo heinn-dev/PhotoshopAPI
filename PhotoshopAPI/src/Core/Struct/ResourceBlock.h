@@ -73,7 +73,7 @@ struct ICCProfileBlock : public ResourceBlock
 	// We dont overwrite calculateSize here since we read m_DataSize which gives us all the info to know the size
 
 	ICCProfileBlock() = default;
-	ICCProfileBlock(std::vector<uint8_t>&& iccProfile);
+	ICCProfileBlock(std::vector<uint8_t> iccProfile);
 	 
 	void read(File& document, const uint64_t offset);
 	void write(File& document) override;
@@ -89,7 +89,7 @@ struct XMPMetadataBlock : public ResourceBlock
 	// We dont overwrite calculateSize here since we read m_DataSize which gives us all the info to know the size
 
 	XMPMetadataBlock() = default;
-	XMPMetadataBlock(std::vector<uint8_t>&& data);
+	XMPMetadataBlock(std::vector<uint8_t> data);
 
 	void read(File& document, const uint64_t offset);
 	void write(File& document) override;

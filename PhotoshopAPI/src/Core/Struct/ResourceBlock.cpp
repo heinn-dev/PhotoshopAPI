@@ -97,7 +97,7 @@ void ResolutionInfoBlock::write(File& document)
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-ICCProfileBlock::ICCProfileBlock(std::vector<uint8_t>&& iccProfile)
+ICCProfileBlock::ICCProfileBlock(std::vector<uint8_t> iccProfile)
 {
 	m_UniqueId = Enum::ImageResource::ICCProfile;
 	m_Name = { "", 2u };
@@ -150,7 +150,7 @@ void ICCProfileBlock::write(File& document)
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-XMPMetadataBlock::XMPMetadataBlock(std::vector<uint8_t>&& data)
+XMPMetadataBlock::XMPMetadataBlock(std::vector<uint8_t> data)
 {
 	m_UniqueId = Enum::ImageResource::XMPMetadata;
 	m_Name = { "", 2u };
