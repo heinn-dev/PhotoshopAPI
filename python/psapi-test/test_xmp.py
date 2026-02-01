@@ -14,7 +14,7 @@ class TestXMPMetadata(unittest.TestCase):
 
     def test_roundtrip_xmp_metadata(self):
         # Create a simple 8-bit layered file
-        layered_file = psapi.LayeredFile_8bit(psapi.enum.ColorMode.RGB, 100, 100)
+        layered_file = psapi.LayeredFile_8bit(psapi.enum.ColorMode.rgb, 100, 100)
         
         # Define some XMP metadata (dummy XML)
         xmp_data = b'<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns/"></rdf:RDF></x:xmpmeta>'
@@ -39,14 +39,14 @@ class TestXMPMetadata(unittest.TestCase):
         self.assertEqual(read_xmp.tobytes(), xmp_data)
 
     def test_empty_xmp(self):
-        layered_file = psapi.LayeredFile_8bit(psapi.enum.ColorMode.RGB, 100, 100)
+        layered_file = psapi.LayeredFile_8bit(psapi.enum.ColorMode.rgb, 100, 100)
         # Should be empty initially
         xmp = layered_file.xmp_metadata
         self.assertEqual(xmp.size, 0)
 
     def test_set_xmp_from_bytes(self):
          # Create a simple 8-bit layered file
-        layered_file = psapi.LayeredFile_8bit(psapi.enum.ColorMode.RGB, 100, 100)
+        layered_file = psapi.LayeredFile_8bit(psapi.enum.ColorMode.rgb, 100, 100)
         
         # Define some XMP metadata (dummy XML)
         xmp_data = b'<x:xmpmeta>Test</x:xmpmeta>'
