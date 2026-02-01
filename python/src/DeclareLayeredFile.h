@@ -232,6 +232,23 @@ void declare_layered_file(py::module& m, const std::string& extension) {
 				throw py::type_error("ICC profile must be either a numpy.ndarray or a filesystem path (str or os.PathLike)");
 			}
 		});
+
+	layeredFile.def_property("xmp_metadata",
+		[](const Class& self) {
+			auto data = self.xmp_metadata();
+			uint8_t* ptr = data.data();
+			std::vector<size_t> shape = { data.size() };
+			return py::array_t<uint8_t>(shape, ptr);
+		},
+		[](Class& self, const py::array_t<uint8_t>& value) {
+			py::buffer_info buf = value.request();
+			std::vector<uint8_t> data(
+				static_cast<uint8_t*>(buf.ptr),
+				static_cast<uint8_t*>(buf.ptr) + buf.size
+			);
+			self.xmp_metadata(std::move(data));
+		});
+
 	layeredFile.def_property("compression", [](const Class& self) {throw py::type_error("compression property has no getter"); }, &Class::set_compression);
 	layeredFile.def_property_readonly("num_channels", &Class::num_channels);
 	layeredFile.def_property_readonly("layers", [](Class& self) { return self.layers(); });

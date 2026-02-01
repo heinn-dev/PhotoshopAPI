@@ -201,6 +201,18 @@ namespace _Impl
 		return ICCProfile{};
 	}
 
+	/// Read the XMP Metadata from the PhotoshopFile, if it doesnt exist we simply initialize an
+	/// empty vector
+	inline std::vector<uint8_t> read_xmp_metadata(const PhotoshopFile* file)
+	{
+		const auto blockPtr = file->m_ImageResources.getResourceBlockView<XMPMetadataBlock>(Enum::ImageResource::XMPMetadata);
+		if (blockPtr)
+		{
+			return blockPtr->m_RawData;
+		}
+		return std::vector<uint8_t>{};
+	}
+
 	// Validate clipping masks, this checks that layers with clipping masks have a layer below them.
 	template <typename T>
 	void validate_clipping_masks(LayeredFile<T>& document);

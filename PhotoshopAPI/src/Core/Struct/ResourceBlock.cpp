@@ -147,4 +147,58 @@ void ICCProfileBlock::write(File& document)
 	WritePadddingBytes(document, m_DataSize - m_RawICCProfile.size());
 }
 
+
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+XMPMetadataBlock::XMPMetadataBlock(std::vector<uint8_t>&& data)
+{
+	m_UniqueId = Enum::ImageResource::XMPMetadata;
+	m_Name = { "", 2u };
+	assert(data.size() < std::numeric_limits<uint32_t>::max());
+	m_DataSize = RoundUpToMultiple<uint32_t>(static_cast<uint32_t>(data.size()), 2u);
+
+	m_RawData = std::move(data);
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+void XMPMetadataBlock::read(File& document, const uint64_t offset)
+{
+	PSAPI_PROFILE_FUNCTION();
+	m_UniqueId = Enum::ImageResource::XMPMetadata;
+	m_Name.read(document, 2u);
+	m_DataSize = RoundUpToMultiple(ReadBinaryData<uint32_t>(document), 2u);
+	auto size = static_cast<uint64_t>(4u) + 2u + m_Name.size() + 4u + m_DataSize;
+	FileSection::initialize(offset, size);
+
+	m_RawData = ReadBinaryArray<uint8_t>(document, m_DataSize);
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+void XMPMetadataBlock::write(File& document)
+{
+	PSAPI_PROFILE_FUNCTION();
+
+	Signature sig = Signature("8BIM");
+	WriteBinaryData<uint32_t>(document, sig.m_Value);
+
+	WriteBinaryData<uint16_t>(document, Enum::imageResourceToInt(m_UniqueId));
+	m_Name.write(document);
+	WriteBinaryData<uint32_t>(document, m_DataSize);	// This value is already padded
+
+	WriteBinaryArray<uint8_t>(document, std::move(m_RawData));
+
+	// Check that we didnt initialize m_DataSize incorrectly
+	if (static_cast<int>(m_DataSize) - m_RawData.size() < 0) [[unlikely]]
+	{
+		PSAPI_LOG_ERROR("XMPMetadataBlock", "Block would require writing %i padding bytes which is not possible, is m_DataSize initialized correctly?",
+			static_cast<int>(m_DataSize) - m_RawData.size());
+	}
+	// This will handle the 0 byte case
+	WritePadddingBytes(document, m_DataSize - m_RawData.size());
+}
+
 PSAPI_NAMESPACE_END

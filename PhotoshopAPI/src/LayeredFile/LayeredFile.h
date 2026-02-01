@@ -77,6 +77,11 @@ struct LayeredFile
 	ICCProfile icc_profile() const noexcept { return m_ICCProfile; }
 	void icc_profile(ICCProfile profile) noexcept { m_ICCProfile = std::move(profile); }
 
+	/// The files' XMP Metadata
+	std::vector<uint8_t>& xmp_metadata() noexcept { return m_XMPMetadata; }
+	std::vector<uint8_t> xmp_metadata() const noexcept { return m_XMPMetadata; }
+	void xmp_metadata(std::vector<uint8_t> metadata) noexcept { m_XMPMetadata = std::move(metadata); }
+
 	/// The files' dots per inch (dpi) resolution
 	float& dpi() noexcept { return m_DotsPerInch; }
 	float dpi() const noexcept { return m_DotsPerInch; }
@@ -166,6 +171,8 @@ struct LayeredFile
 
 		// Extract the ICC Profile if it exists on the document, otherwise it will simply be empty
 		m_ICCProfile = _Impl::read_icc_profile(document.get());
+		// Extract the XMP Metadata if it exists on the document
+		m_XMPMetadata = _Impl::read_xmp_metadata(document.get());
 		// Extract the DPI from the document, default to 72
 		m_DotsPerInch = _Impl::read_dpi(document.get());
 		if (document->m_LayerMaskInfo.m_AdditionalLayerInfo)
@@ -634,6 +641,9 @@ private:
 	/// The ICC Profile associated with the file, this may be empty in which case there will be no colour
 	/// profile associated with the file
 	ICCProfile m_ICCProfile;
+
+	/// The XMP Metadata associated with the file
+	std::vector<uint8_t> m_XMPMetadata;
 
 	/// The DPI of the document, this will only change the display unit and wont resize any data
 	float m_DotsPerInch = 72.0f;

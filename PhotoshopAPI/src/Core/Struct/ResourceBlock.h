@@ -79,4 +79,20 @@ struct ICCProfileBlock : public ResourceBlock
 	void write(File& document) override;
 };
 
+
+/// This ResourceBlock holds the XMP Metadata associated with the document
+struct XMPMetadataBlock : public ResourceBlock
+{
+	/// Stores the raw bytes of the XMP Packet
+	std::vector<uint8_t> m_RawData;
+
+	// We dont overwrite calculateSize here since we read m_DataSize which gives us all the info to know the size
+
+	XMPMetadataBlock() = default;
+	XMPMetadataBlock(std::vector<uint8_t>&& data);
+
+	void read(File& document, const uint64_t offset);
+	void write(File& document) override;
+};
+
 PSAPI_NAMESPACE_END

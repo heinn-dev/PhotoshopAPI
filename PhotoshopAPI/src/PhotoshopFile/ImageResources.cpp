@@ -96,6 +96,14 @@ uint32_t ImageResources::parseResourceBlock(File& document)
 		m_ResourceBlocks.emplace_back(std::move(blockPtr));
 		return blockSize;
 	}
+	else if (uniqueID == Enum::ImageResource::XMPMetadata)
+	{
+		auto blockPtr = std::make_unique<XMPMetadataBlock>();
+		blockPtr->read(document, blockOffset);
+		uint32_t blockSize = blockPtr->size<uint32_t>();
+		m_ResourceBlocks.emplace_back(std::move(blockPtr));
+		return blockSize;
+	}
 	else
 	{
 		// Skip the block

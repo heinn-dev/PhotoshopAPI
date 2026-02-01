@@ -25,6 +25,13 @@ ImageResources generate_imageresources(LayeredFile<T>& layeredFile)
 		blockVec.push_back(std::make_unique<ICCProfileBlock>(iccBlock));
 	}
 
+	// Only store the XMP Metadata if we actually have data stored on it
+	if (layeredFile.xmp_metadata().size() > 0)
+	{
+		auto xmpBlock = XMPMetadataBlock(layeredFile.xmp_metadata());
+		blockVec.push_back(std::make_unique<XMPMetadataBlock>(xmpBlock));
+	}
+
 	auto dpiBlock = ResolutionInfoBlock(layeredFile.dpi());
 	blockVec.push_back(std::make_unique<ResolutionInfoBlock>(dpiBlock));
 
